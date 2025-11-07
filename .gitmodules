@@ -1,3 +1,6 @@
 [submodule "deberta-v3-large"]
 	path = deberta-v3-large
 	url = https://huggingface.co/microsoft/deberta-v3-large
+[submodule "glados-model"]
+	path = glados-model
+	url = https://huggingface.co/WarriorMama777/GLaDOS_TTS
