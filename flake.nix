@@ -1,5 +1,5 @@
 {
-  description = "Dev shell with CMake < 3.30 for building style-bert-vits2 deps";
+  description = "Dev shell with Python 3.11 for aperture-TTS";
 
   inputs.nixpkgs.url = "github:NixOS/nixpkgs/nixos-24.05";
   inputs.unstable.url = "github:NixOS/nixpkgs/nixos-unstable";
@@ -33,10 +33,10 @@
               pkgs.python311
               unstablePkgs.uv
               pkgs.zlib
-              pkgs.python311Packages.numpy
             ];
             shellHook = ''
               export LD_LIBRARY_PATH="${pkgs.zlib.out}/lib:$LD_LIBRARY_PATH"
+              export UV_PYTHON="${pkgs.python311}/bin/python3.11"
             '';
           };
         }
