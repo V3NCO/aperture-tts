@@ -32,7 +32,12 @@
               pkgs.pkg-config
               pkgs.python311
               unstablePkgs.uv
+              pkgs.zlib
+              pkgs.python311Packages.numpy
             ];
+            shellHook = ''
+              export LD_LIBRARY_PATH="${pkgs.zlib.out}/lib:$LD_LIBRARY_PATH"
+            '';
           };
         }
       );
