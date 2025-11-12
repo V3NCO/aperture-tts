@@ -7,16 +7,16 @@ from IPython.display import Audio
 
 api_router = APIRouter()
 
-class Textinput(BaseModel):
+class ModelParams(BaseModel):
     text: str
-    aa: str
+    style: str = "Neutral"
 
 @api_router.get('/', response_class=Response)
 async def index(
-    text: Textinput,
+    params: ModelParams,
     model: ModelService = Depends(get_model)
 ):
-    sr,audio = model.generate_audio(text.text)
+    sr,audio = model.generate_audio(text=params.text, style=params.style)
     print(sr)
     print(audio)
     return Response(content=Audio(audio, rate=sr).data, media_type="audio/wav")

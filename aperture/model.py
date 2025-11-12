@@ -19,7 +19,7 @@ class ModelLoader:
 
         self.model = model
 
-    def generate_audio(self, text: str):
+    def generate_audio(self, text: str, style: str = "Neutral"):
         from style_bert_vits2.tts_model import Languages
-        sr, audio = self.model.infer(text=text, language=Languages.EN)
+        sr, audio = self.model.infer(text=text, language=Languages.EN, style=style)
         return sr,audio
