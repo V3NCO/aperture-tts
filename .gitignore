@@ -3,3 +3,4 @@ aperture/__pycache__
 .venv
 
 employee-daycare-center/.env
+.env
