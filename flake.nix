@@ -37,6 +37,9 @@
             shellHook = ''
               export LD_LIBRARY_PATH="${pkgs.zlib.out}/lib:$LD_LIBRARY_PATH"
               export UV_PYTHON="${pkgs.python311}/bin/python3.11"
+              set -a
+              source .env
+              set +a
             '';
           };
         }
