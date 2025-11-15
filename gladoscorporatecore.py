@@ -1,5 +1,5 @@
 import os
-from employee_daycare_center.app import app
+from employee_daycare_center.glados_slack import glados
 from slack_bolt.adapter.socket_mode import SocketModeHandler
 
 
