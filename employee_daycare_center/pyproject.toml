@@ -19,7 +19,7 @@ dependencies = [
 ]
 
 [project.scripts]
-app = "app.__main__:start"
+app = "glados_slack.__main__:start"
 
 [build-system]
 requires = ["hatchling"]

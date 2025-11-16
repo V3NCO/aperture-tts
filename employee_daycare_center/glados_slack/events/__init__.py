@@ -4,10 +4,10 @@ from glados_slack.events.message import message_handler
 
 
 EVENTS = [
-    {
-        "name": "message",
-        "handler": message_handler,
-    },
+    # {
+    #     "name": "message",
+    #     "handler": message_handler,
+    # },
 ]
 
 
