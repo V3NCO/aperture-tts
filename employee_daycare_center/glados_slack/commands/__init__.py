@@ -10,25 +10,17 @@ from slack_bolt.async_app import AsyncRespond
 from slack_sdk.errors import SlackApiError
 from slack_sdk.web.async_client import AsyncWebClient
 
-from glados_slack.commands.world import world_handler
+from glados_slack.commands.join import join_handler
 from glados_slack.config import config
 
-PREFIX = "hello"  # the main command!
+PREFIX = "glados"  # the main command!
 
 COMMANDS = [
     {
-        "name": "world",
-        "description": "hello world!",
-        "function": world_handler,
-        "parameters": [
-            {
-                "name": "user",
-                "type": "string",
-                "description": "anything!",
-                "default": ":3",
-            },
-        ],
-    },
+        "name": "join",
+        "description": "Execute this in the channel of the huddle you want me to join!",
+        "function": join_handler
+    }
 ]
 
 
