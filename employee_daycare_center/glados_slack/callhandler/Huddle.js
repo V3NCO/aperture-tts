@@ -2,6 +2,7 @@ const express = require('express');
 const path = require('path');
 const puppeteer = require('puppeteer');
 const { join } = require('path');
+const fs = require('fs');
 
 const {MeetingSessionConfiguration, DefaultDeviceController, DefaultMeetingSession, ConsoleLogger, LogLevel, AudioProfile } = require('amazon-chime-sdk-js')
 const serverApp = express();
@@ -48,7 +49,7 @@ serverApp.get('/', (req, res) => {
 });
 
 serverApp.get('/amazon-chime-sdk.min.js', (req, res) => {
-  const sdkPath = path.join(__dirname, 'amazon-chime-sdk/utils/singlejs/build/amazon-chime-sdk.min.js');
+  const sdkPath = path.join(__dirname, 'amazon-chime-sdk.min.js');
   fs.readFile(sdkPath, (err, data) => {
     if (err) {
       res.writeHead(404);
