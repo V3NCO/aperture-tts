@@ -22,5 +22,5 @@ async def join_handler(
     huddle = await env.http.post("https://blahaj.enterprise.slack.com/api/rooms.join", data=payload, headers=headers)
     response = await huddle.json()
     print(response)
-    
     await respond(f"Joining huddle in <#{response['huddle']['channels'][0]}|>")
+    await env.http.post("http://localhost:7171/join", json={"meeting": response["call"]["free_willy"]["meeting"], "attendee": response["call"]["free_willy"]["meeting"]})
