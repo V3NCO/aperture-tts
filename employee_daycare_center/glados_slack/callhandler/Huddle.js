@@ -15,7 +15,7 @@ let page
 async function getBrowser() {
   if (!browser) {
     browser = await puppeteer.launch({
-      headless: false,
+      headless: true,
       args: [
             '--no-sandbox',
             '--disable-web-security',
