@@ -61,7 +61,7 @@ serverApp.get('/amazon-chime-sdk.min.js', (req, res) => {
   });
 });
 
-
+// thanks deployor for doing all the hard work before me :pf:
 serverApp.post('/join', async (req, res) => {
   try {
     const { meeting, attendee } = req.body;
@@ -88,7 +88,7 @@ serverApp.post('/join', async (req, res) => {
       config.audioProfile = AudioProfile.fullbandMusicStereo();
       window.meetingSession = new DefaultMeetingSession(config, logger, deviceController);
       window.audioElement = document.createElement('audio');
-      window.audioElement.autoplay = true;
+      window.audioElement.autoplay = false;
       window.audioElement.muted = false;
       document.body.appendChild(window.audioElement);
       window.meetingSession.audioVideo.bindAudioElement(window.audioElement);
@@ -132,42 +132,42 @@ serverApp.post('/join', async (req, res) => {
           window.iconCanvas.height = window.canvas.height;
           window.iconCtx = window.iconCanvas.getContext('2d');
 
-          window.updateTime = () => {
-            window.timeCtx.clearRect(0, 0, window.timeCanvas.width, window.timeCanvas.height);
-            const now = new Date();
-            const time24 = now.toLocaleTimeString('en-US', { hour12: false });
-            const time12 = now.toLocaleTimeString('en-US', { hour12: true });
-            window.timeCtx.fillStyle = 'white';
-            window.timeCtx.font = '48px serif';
-            window.timeCtx.fillText(`24h: ${time24}`, 50, 50);
-            window.timeCtx.fillText(`12h: ${time12}`, 50, 100);
-          };
+          // window.updateTime = () => {
+          //   window.timeCtx.clearRect(0, 0, window.timeCanvas.width, window.timeCanvas.height);
+          //   const now = new Date();
+          //   const time24 = now.toLocaleTimeString('en-US', { hour12: false });
+          //   const time12 = now.toLocaleTimeString('en-US', { hour12: true });
+          //   window.timeCtx.fillStyle = 'white';
+          //   window.timeCtx.font = '48px serif';
+          //   window.timeCtx.fillText(`24h: ${time24}`, 50, 50);
+          //   window.timeCtx.fillText(`12h: ${time12}`, 50, 100);
+          // };
 
-          window.updateIcons = () => {
-            window.iconCtx.clearRect(0, 0, window.iconCanvas.width, window.iconCanvas.height);
-            const iconSize = 40;
-            window.iconCtx.font = `900 ${iconSize}px "Font Awesome 6 Free"`;
-            const rightX = window.canvas.width - 60;
-            const iconYStart = 40;
-            const iconSpacing = 50;
-            let currentY = iconYStart;
-            window.iconCtx.fillStyle = window.isMuted ? 'red' : 'green';
-            window.iconCtx.fillText(window.isMuted ? '\uf131' : '\uf130', rightX, currentY);
-            currentY += iconSpacing;
-            window.iconCtx.fillStyle = (window.showCamera && window.isConnected) ? 'green' : 'red';
-            window.iconCtx.fillText(window.showCamera ? '\uf03d' : '\uf4e2', rightX, currentY);
-            currentY += iconSpacing;
-            window.iconCtx.fillStyle = window.isAudioOutputEnabled ? 'green' : 'red';
-            window.iconCtx.fillText(window.isAudioOutputEnabled ? '\uf028' : '\uf026', rightX, currentY);
-          };
+          // window.updateIcons = () => {
+          //   window.iconCtx.clearRect(0, 0, window.iconCanvas.width, window.iconCanvas.height);
+          //   const iconSize = 40;
+          //   window.iconCtx.font = `900 ${iconSize}px "Font Awesome 6 Free"`;
+          //   const rightX = window.canvas.width - 60;
+          //   const iconYStart = 40;
+          //   const iconSpacing = 50;
+          //   let currentY = iconYStart;
+          //   window.iconCtx.fillStyle = window.isMuted ? 'red' : 'green';
+          //   window.iconCtx.fillText(window.isMuted ? '\uf131' : '\uf130', rightX, currentY);
+          //   currentY += iconSpacing;
+          //   window.iconCtx.fillStyle = (window.showCamera && window.isConnected) ? 'green' : 'red';
+          //   window.iconCtx.fillText(window.showCamera ? '\uf03d' : '\uf4e2', rightX, currentY);
+          //   currentY += iconSpacing;
+          //   window.iconCtx.fillStyle = window.isAudioOutputEnabled ? 'green' : 'red';
+          //   window.iconCtx.fillText(window.isAudioOutputEnabled ? '\uf028' : '\uf026', rightX, currentY);
+          // };
 
-          window.updateTime();
-          window.updateIcons();
-          setInterval(window.updateTime, 1000);
+          // window.updateTime();
+          // window.updateIcons();
+          // setInterval(window.updateTime, 1000);
 
-          window.fallbackImage = new Image();
-          window.fallbackImage.src = 'http://localhost:3001/oop.png';
-          window.fallbackImage.onload = () => {};
+          // window.fallbackImage = new Image();
+          // window.fallbackImage.src = 'http://localhost:3001/oop.png';
+          // window.fallbackImage.onload = () => {};
           window.isStreamOn = true;
 
           window.attemptRecovery = async function() {
@@ -243,8 +243,8 @@ serverApp.post('/join', async (req, res) => {
       const contentAudioTrack = window.audioDestination.stream.getAudioTracks()[0];
       const contentStream = new MediaStream([videoStream.getVideoTracks()[0], contentAudioTrack]);
       window.meetingSession.audioVideo.enableSVCForContentShare(true);
-      window.meetingSession.audioVideo.chooseVideoInputQuality(1920, 1080, 15, 2000);
-      window.meetingSession.audioVideo.setVideoMaxBandwidthKbps(2000);
+      window.meetingSession.audioVideo.chooseVideoInputQuality(1, 1, 15, 20);
+      window.meetingSession.audioVideo.setVideoMaxBandwidthKbps(20);
       window.meetingSession.audioVideo.setContentShareVideoCodecPreferences([
         window.ChimeSDK.VideoCodecCapability.vp9()
       ]);
@@ -268,6 +268,63 @@ serverApp.post('/join', async (req, res) => {
     res.status(500).json({ ok: false, error: 'Failed to join meeting: '+err.message });
   }
 });
+
+serverApp.post('/play-audio', async (req, res) => {
+  try {
+    if (!page) {
+      return res.status(400).json({
+        ok: false,
+        error: 'No active meeting page. Call /join first.',
+      });
+    }
+
+    const wavBuffer = req.body;
+    if (!Buffer.isBuffer(wavBuffer) || wavBuffer.length === 0) {
+      return res.status(400).json({
+        ok: false,
+        error: 'Invalid audio data',
+      });
+    }
+
+    const base64 = wavBuffer.toString('base64');
+    const dataUrl = `data:audio/wav;base64,${base64}`;
+
+
+    window.ensureAudioGraph = function () {
+      if (window.PlaybackElement) return;
+
+      window.PlaybackElement = new Audio();
+      window.PlaybackElement.loop = false;
+
+      window.AudioSource = window.audioContext.createMediaStreamSource(window.musicElement);
+      window.AudioGain = window.audioContext.createGain();
+      window.AudioGain.gain.value = 1.0;
+
+      window.AudioSource.connect(window.AudioGain);
+      window.AudioGain.connect(window.audioDestination);
+    };
+
+    window.playMediaUrl = async function(url) {
+      window.ensureAudioGraph();
+      window.PlaybackElement.pause();
+      window.PlaybackElement.currentTime = 0;
+      window.PlaybackElement.src = url;
+      await window.PlaybackElement.play();
+    };
+
+    window.stopMedia = function() {
+      if (!window.PlaybackElement) return;
+      window.PlaybackElement.pause();
+      window.PlaybackElement.currentTime = 0;
+    };
+
+    await window.playMusicUrl(dataUrl)
+
+  } catch (err) {
+    console.error('Error playing audio: ', err);
+    res.status(500).json({ ok: false, error: 'Failed to play audio: '+err.message });
+  }
+})
 
 serverApp.listen(port, () => {
   console.log(`Server is running on port ${port}`);
