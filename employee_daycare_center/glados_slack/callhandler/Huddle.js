@@ -76,6 +76,8 @@ serverApp.post('/join', async (req, res) => {
 
     // Log console messages from the browser page to the Node console
     page.on('console', msg => console.log('PAGE LOG:', msg.text()));
+    page.on('error', err => console.error('PAGE ERROR', err));
+    page.on('pageerror', e => console.error('PAGEERROR', e));
 
     await page.goto(`http://localhost:${port}/`);
     await page.addScriptTag({ path: join(__dirname, 'amazon-chime-sdk.min.js') });
@@ -85,7 +87,7 @@ serverApp.post('/join', async (req, res) => {
         window.attendee = a;
       }, { m: req.body.meeting, a: req.body.attendee });
 
-    await page.evaluate(async () => {
+    page.evaluate(async () => {
       console.log('1. Setting up Chime session objects...');
       const { MeetingSessionConfiguration, DefaultDeviceController, DefaultMeetingSession, ConsoleLogger, LogLevel, AudioProfile } = window.ChimeSDK;
       const logger = new ConsoleLogger('Logger', LogLevel.INFO);
@@ -104,8 +106,8 @@ serverApp.post('/join', async (req, res) => {
       window.audioDestination = window.audioContext.createMediaStreamDestination();
       console.log('   AudioContext is ready.');
 
-      console.log('4. Getting user media (mic/camera)...');
-      const mediaStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: { noiseSuppression: false, echoCancellation: false, autoGainControl: false, sampleRate: 48000, channelCount: 2 } });
+      console.log('4. Getting user media (mic)...');
+      const mediaStream = await navigator.mediaDevices.getUserMedia({ audio: { noiseSuppression: false, echoCancellation: false, autoGainControl: false, sampleRate: 48000, channelCount: 2 } });
       console.log('   User media obtained.');
 
       console.log('5. Connecting media sources to audio graph...');
@@ -122,41 +124,13 @@ serverApp.post('/join', async (req, res) => {
       window.PlaybackElement.loop = false;
       const playbackSourceNode = window.audioContext.createMediaElementSource(window.PlaybackElement);
       window.PlaybackGain = window.audioContext.createGain();
-      window.PlaybackGain.gain.value = 1.0;
+      window.PlaybackGain.gain.value = 0.75;
       playbackSourceNode.connect(window.PlaybackGain);
       window.PlaybackGain.connect(window.audioDestination);
       console.log('   All audio sources connected.');
 
-      console.log('6. Setting up video element and canvas...');
-      window.videoElement = document.createElement('video');
-      window.videoElement.srcObject = mediaStream;
-      await window.videoElement.play();
-
-      window.canvas = document.createElement('canvas');
-      window.canvas.width = 1920;
-      window.canvas.height = 1080;
-      window.ctx = window.canvas.getContext('2d');
-
-      let lastDrawTime = 0;
-      const frameInterval = 1000 / 15;
-      window.drawToCanvas = () => {
-        const currentTime = performance.now();
-        if (currentTime - lastDrawTime >= frameInterval) {
-            lastDrawTime = currentTime;
-            window.ctx.fillStyle = 'black';
-            window.ctx.fillRect(0, 0, window.canvas.width, window.canvas.height);
-            window.ctx.drawImage(window.videoElement, 0, 0, window.canvas.width, window.canvas.height);
-        }
-        requestAnimationFrame(window.drawToCanvas);
-      }
-      window.drawToCanvas();
-      console.log('   Video and canvas are ready.');
-
       console.log('7. Creating and starting content share stream...');
-      const videoStream = window.canvas.captureStream(15);
-      const contentAudioTrack = window.audioDestination.stream.getAudioTracks()[0];
-      const contentStream = new MediaStream([videoStream.getVideoTracks()[0], contentAudioTrack]);
-
+      const contentStream = window.audioDestination.stream;
       await window.meetingSession.audioVideo.startContentShare(contentStream);
       console.log('   Content share started successfully!');
 
@@ -200,10 +174,11 @@ serverApp.post('/play-audio', express.raw({ type: 'audio/wav', limit: '1000mb' }
         console.error('PlaybackElement not found. Was the /join setup successful?');
         return;
       }
-      
+
       window.PlaybackElement.src = url;
       try {
         await window.PlaybackElement.play();
+        console.log('Playback started.');
       } catch (e) {
         console.error('Error playing audio in browser:', e);
       }
