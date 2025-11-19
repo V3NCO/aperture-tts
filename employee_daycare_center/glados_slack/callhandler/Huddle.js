@@ -99,7 +99,7 @@ serverApp.post('/join', async (req, res) => {
       window.isAudioOutputEnabled = true;
       window.audioContext = new AudioContext();
       await window.audioContext.resume();
-      window.audioDestination = window.audioContext.createMediaStreamDestination();
+      window.audioDestination = await window.audioContext.createMediaStreamDestination();
       await window.meetingSession.audioVideo.start();
 
       const devices = await navigator.mediaDevices.enumerateDevices();
@@ -269,7 +269,7 @@ serverApp.post('/join', async (req, res) => {
   }
 });
 
-serverApp.post('/play-audio', async (req, res) => {
+serverApp.post('/play-audio', express.raw({ type: 'audio/wav', limit: '1000mb' }), async (req, res) => {
   try {
     if (!page) {
       return res.status(400).json({
@@ -290,41 +290,50 @@ serverApp.post('/play-audio', async (req, res) => {
     const dataUrl = `data:audio/wav;base64,${base64}`;
 
 
-    window.ensureAudioGraph = function () {
-      if (window.PlaybackElement) return;
+    await page.evaluate(async (url) => {
+      window.ensureAudioGraph = function () {
+        if (window.PlaybackElement) return;
 
-      window.PlaybackElement = new Audio();
-      window.PlaybackElement.loop = false;
+        window.PlaybackElement = new Audio();
+        window.PlaybackElement.loop = false;
 
-      window.AudioSource = window.audioContext.createMediaStreamSource(window.musicElement);
-      window.AudioGain = window.audioContext.createGain();
-      window.AudioGain.gain.value = 1.0;
+        const sourceNode = window.audioContext.createMediaElementSource(
+          window.PlaybackElement
+        );
 
-      window.AudioSource.connect(window.AudioGain);
-      window.AudioGain.connect(window.audioDestination);
-    };
+        window.AudioGain = window.audioContext.createGain();
+        window.AudioGain.gain.value = 1.0;
 
-    window.playMediaUrl = async function(url) {
-      window.ensureAudioGraph();
-      window.PlaybackElement.pause();
-      window.PlaybackElement.currentTime = 0;
-      window.PlaybackElement.src = url;
-      await window.PlaybackElement.play();
-    };
+        sourceNode.connect(window.AudioGain);
+        window.AudioGain.connect(window.audioDestination);
+      };
 
-    window.stopMedia = function() {
-      if (!window.PlaybackElement) return;
-      window.PlaybackElement.pause();
-      window.PlaybackElement.currentTime = 0;
-    };
+      window.playMediaUrl = async function (url) {
+        window.ensureAudioGraph();
+        window.PlaybackElement.pause();
+        window.PlaybackElement.currentTime = 0;
+        window.PlaybackElement.src = url;
+        await window.PlaybackElement.play();
+      };
 
-    await window.playMusicUrl(dataUrl)
+      window.stopMedia = function () {
+        if (!window.PlaybackElement) return;
+        window.PlaybackElement.pause();
+        window.PlaybackElement.currentTime = 0;
+      };
 
-  } catch (err) {
-    console.error('Error playing audio: ', err);
-    res.status(500).json({ ok: false, error: 'Failed to play audio: '+err.message });
+      await window.playMediaUrl(url);
+
+    }, dataUrl);
+
+    res.json({ ok: true, message: 'Audio playback triggered' });
+    } catch (err) {
+      console.error('Error playing audio: ', err);
+      res.status(500).json({ ok: false, error: 'Failed to play audio: ' + err.message });
+    }
   }
-})
+);
+
 
 serverApp.listen(port, () => {
   console.log(`Server is running on port ${port}`);
