@@ -8,7 +8,7 @@ from piccolo.conf.apps import table_finder
 CURRENT_DIRECTORY = os.path.dirname(os.path.abspath(__file__))
 
 APP_CONFIG = AppConfig(
-    app_name="app",
+    app_name="glados_slack",
     migrations_folder_path=os.path.join(CURRENT_DIRECTORY, "piccolo_migrations"),
     table_classes=table_finder(
         modules=[".tables"],
