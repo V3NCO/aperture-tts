@@ -5,9 +5,9 @@ from piccolo.columns import Text, Varchar, Boolean
 #     slack_id = Varchar(length=20, index=True)
 #     age = Integer()
 class CurrentHuddles(Table):
-    channel_id = Varchar(length=10, index=True)
+    channel_id = Varchar(length=40, index=True)
     thread_ts = Text()
 class UserSettings(Table):
-    slack_id = Varchar(length=20, index=True)
+    slack_id = Varchar(length=40, index=True)
     tone = Text()
     ignore = Boolean(default=False)
