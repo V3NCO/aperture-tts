@@ -8,3 +8,9 @@ git submodule init && git submodule update
 nix develop
 uv sync
 ```
+
+## Roadmap
+- [ ] Better setting up guide
+- [ ] Multiple Huddles
+- [ ] Replace text with stuff tts can read
+- [ ] User settings ect
