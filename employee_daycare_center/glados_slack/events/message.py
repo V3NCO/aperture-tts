@@ -1,13 +1,14 @@
 from slack_bolt.async_app import AsyncSay
 from slack_sdk.web.async_client import AsyncWebClient
-import logging
-from piccolo.query import Select
-from glados_slack.tables import CurrentHuddles
+from glados_slack.tables import CurrentHuddles, UserSettings
 
 async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
-    # event = body["event"]
-    # user = event["user"]
-    # text = event["text"]
-    # logging.info(text)
-    # await say(f'Body is : {body}')
-    await CurrentHuddles.exists().where(CurrentHuddles.name == 'Pythonistas')
+    event = body["event"]
+    if "thread_ts" in event.keys():
+        is_tracked = await CurrentHuddles.exists().where(CurrentHuddles.thread_ts == event['thread_ts'])
+        if is_tracked:
+            userid = event["user"]
+            text = event["text"]
+            await say(f"User {userid} said: {text}")
+    else:
+        pass

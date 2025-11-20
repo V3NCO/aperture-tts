@@ -2,6 +2,7 @@ from slack_bolt.async_app import AsyncAck
 from slack_bolt.async_app import AsyncRespond
 from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.config import config
+from glados_slack.tables import CurrentHuddles
 
 async def join_handler(
     ack: AsyncAck,
@@ -24,3 +25,4 @@ async def join_handler(
     print(response)
     await respond(f"Joining huddle in <#{response['huddle']['channels'][0]}|>")
     await env.http.post("http://localhost:7171/join", json={"meeting": response["call"]["free_willy"]["meeting"], "attendee": response["call"]["free_willy"]["attendee"]})
+    await CurrentHuddles.insert(CurrentHuddles(channel_id=response['huddle']['channels'][0], thread_ts=response['huddle']['thread_root_ts'])).run()
