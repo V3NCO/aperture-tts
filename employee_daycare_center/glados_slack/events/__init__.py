@@ -1,6 +1,7 @@
 from slack_bolt.async_app import AsyncApp
 
 from glados_slack.events.message import message_handler
+from glados_slack.events.home_event import app_home_opened
 
 
 EVENTS = [
@@ -8,6 +9,10 @@ EVENTS = [
         "name": "message",
         "handler": message_handler,
     },
+    {
+        "name": "app_home_opened",
+        "handler": app_home_opened,
+    }
 ]
 
 
