@@ -2,7 +2,7 @@ from slack_bolt.async_app import AsyncSay
 from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.tables import CurrentHuddles, UserSettings
 from blockkit import Message, Markdown
-from blockkit.core import Table
+from blockkit.core import Table, RawText
 
 async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
     event = body["event"]
@@ -23,7 +23,7 @@ async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
                     .add_block(Markdown(text=f"*Hi <@{userid}>*! :glados: I'm sending you this because you sent a message in a huddle thread I'm tracking..."))
                     .add_block(Markdown(text="So. I'm gonna read out your message in the huddle because that's my default behaviour but you can ask me to ignore your messages with `/glados ignore`"))
                     .add_block(Markdown(text="Here is the info I am storing about you (It's the only data I'll ever have about you)."))
-                    .add_block(Table(rows=[["Slack ID", str(userid)], ["Tone", "Neutral"], ["Ignore", "False"]]))
+                    .add_block(Table(rows=[[RawText("Slack ID"), RawText("Tone"), RawText("Ignore")], [RawText(userid), RawText("Neutral"), RawText("False")]]))
                     .add_block(Markdown(text="Also if you need help dm <@U08L7671TDG>"))
                     .build()
             )
