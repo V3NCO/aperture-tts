@@ -13,8 +13,8 @@ async def leave_handler(
 ):
     await ack()
     from glados_slack.env import env
-
-    if CurrentHuddles.exists().where(CurrentHuddles.channel_id == channel):
+    huddleexists = await CurrentHuddles.exists().where(CurrentHuddles.channel_id == channel)
+    if huddleexists:
         await env.http.post("http://localhost:7171/leave")
         await CurrentHuddles.delete().where(CurrentHuddles.channel_id == channel).run()
         await respond("Left huddle successsfully !")

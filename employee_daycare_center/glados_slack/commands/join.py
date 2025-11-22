@@ -12,9 +12,10 @@ async def join_handler(
     performer: str,
 ):
     await ack()
-    from glados_slack.env import env
-
-    if not CurrentHuddles.exists().where(CurrentHuddles.channel_id == channel):
+    from glados_slack.env import env, logger
+    rowexists = await CurrentHuddles.exists().where(CurrentHuddles.channel_id == channel)
+    logger.info(rowexists)
+    if not rowexists:
         payload = {
                 "token": config.slack.userbot_token,
                 "channel_id": channel,

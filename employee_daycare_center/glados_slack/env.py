@@ -13,7 +13,7 @@ from glados_slack.config import config
 from glados_slack.events import register_events
 from glados_slack.shortcuts import register_shortcuts
 from glados_slack.tasks import register_tasks
-from glados_slack.utils.logging import send_heartbeat
+# from glados_slack.utils.logging import send_heartbeat
 from glados_slack.views import register_views
 
 logger = logging.getLogger(__name__)
@@ -59,7 +59,6 @@ class Environment:
         #    ":neodog_nom_stick: beep boop! online!",
         #    client=self.slack_client,
         #)
-
         yield
 
         logger.debug("Exiting environment context")
