@@ -194,6 +194,43 @@ serverApp.post('/play-audio', express.raw({ type: 'audio/wav', limit: '1000mb' }
   }
 );
 
+serverApp.post('/leave', async (req, res) => {
+  try {
+    if (!page) {
+      return res.status(400).json({
+        ok: false,
+        error: 'No active meeting page to leave.',
+      });
+    }
+
+    await page.evaluate(async () => {
+      if (window.meetingSession) {
+        console.log('Stopping content share...');
+        await window.meetingSession.audioVideo.stopContentShare();
+        console.log('Content share stopped.');
+
+        console.log('Stopping audio/video session...');
+        window.meetingSession.audioVideo.stop();
+        console.log('Audio/video session stopped.');
+
+        if (window.audioContext) {
+            console.log('Closing AudioContext...');
+            await window.audioContext.close();
+            console.log('AudioContext closed.');
+        }
+      }
+    });
+
+    await page.close();
+    page = null; // Reset the page variable
+
+    res.json({ ok: true, message: 'Successfully left the meeting.' });
+  } catch (err) {
+    console.error('Error leaving meeting: ', err);
+    res.status(500).json({ ok: false, error: 'Failed to leave meeting: ' + err.message });
+  }
+})
+
 serverApp.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
