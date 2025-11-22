@@ -15,3 +15,6 @@ wheels/
 # Environment files
 .env
 .env.dev
+
+#Modular stuff
+glados_slack/sounds

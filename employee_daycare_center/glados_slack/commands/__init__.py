@@ -13,6 +13,7 @@ from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.commands.join import join_handler
 from glados_slack.commands.leave import leave_handler
 from glados_slack.commands.clearhuddles import clear_huddle_handle
+from glados_slack.commands.soundboard import soundboard_handler
 from glados_slack.config import config
 
 PREFIX = "glados"  # the main command!
@@ -39,6 +40,32 @@ COMMANDS = [
                         "type": "channel",
                         "description": "The Channel that contains the huddle you want to clear",
                         "default": "<#C000ALL|allchannels>",
+                    },
+        ],
+    },
+    {
+        "name": "soundboard",
+        "description": "Plays a soundboard!",
+        "function": soundboard_handler,
+        "parameters": [
+                    {
+                        "name": "sound",
+                        "type": "string",
+                        "description": "The sound you want to play!",
+                        "default": "no_sound_selected_error",
+                    },
+        ],
+    },
+    {
+        "name": "sb",
+        "description": "Alias for soundboard",
+        "function": soundboard_handler,
+        "parameters": [
+                    {
+                        "name": "sound",
+                        "type": "string",
+                        "description": "The sound you want to play!",
+                        "default": "no_sound_selected_error",
                     },
         ],
     }
