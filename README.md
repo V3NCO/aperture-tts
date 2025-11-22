@@ -13,4 +13,4 @@ uv sync
 - [ ] Better setting up guide
 - [ ] Multiple Huddles
 - [ ] Replace text with stuff tts can read
-- [ ] User settings ect
+- [x] User settings ect
