@@ -1,4 +1,3 @@
-from collections import UserDict
 from slack_sdk.web.async_client import AsyncWebClient
 from blockkit import Home, Header, Section, Checkboxes, Option, StaticSelect
 from glados_slack.tables import UserSettings
@@ -13,11 +12,16 @@ async def app_home_opened(client: AsyncWebClient, body: dict):
             checked = [Option("Ignore", "ignore")]
         tone_selected = Option("Neutral", "neutral")
         match settings[0]["tone"]:
-            case "Standard": tone_selected = Option("Standard", "standard")
-            case "Standard_02": tone_selected = Option("Standard 02", "standard_02")
-            case "Neutral": tone_selected = Option("Neutral", "neutral")
-            case "Deep": tone_selected = Option("Deep", "deep")
-            case "Light": tone_selected = Option("Light", "light")
+            case "Standard":
+                tone_selected = Option("Standard", "standard")
+            case "Standard_02":
+                tone_selected = Option("Standard 02", "standard_02")
+            case "Neutral":
+                tone_selected = Option("Neutral", "neutral")
+            case "Deep":
+                tone_selected = Option("Deep", "deep")
+            case "Light":
+                tone_selected = Option("Light", "light")
 
         await client.views_publish(
             user_id=body["event"]["user"],

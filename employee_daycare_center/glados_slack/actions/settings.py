@@ -19,10 +19,15 @@ async def tone_change_handler(ack: AsyncAck, respond: AsyncRespond, client: Asyn
     userSettings = userSettings[0]
     newvalue = "Neutral"
     match body["actions"][0]["selected_option"]["value"]:
-        case "light": newvalue = "Light"
-        case "deep": newvalue = "Deep"
-        case "standard": newvalue = "Standard"
-        case "standard_02": newvalue = "Standard_02"
-        case "neutral": newvalue = "Neutral"
+        case "light": 
+            newvalue = "Light"
+        case "deep": 
+            newvalue = "Deep"
+        case "standard": 
+            newvalue = "Standard"
+        case "standard_02": 
+            newvalue = "Standard_02"
+        case "neutral": 
+            newvalue = "Neutral"
 
     await UserSettings.update({"tone": newvalue}).where(UserSettings.slack_id == body["user"]["id"]).run()
