@@ -111,3 +111,6 @@ node Huddle.js
 - [ ] Multiple Huddles
 - [ ] Replace text with stuff tts can read
 - [x] User settings ect
+- [ ] Sound insertions with like *sound*
+- [ ] Soundboard
+- [ ] Discord support
