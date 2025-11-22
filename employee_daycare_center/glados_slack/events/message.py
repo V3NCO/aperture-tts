@@ -6,15 +6,18 @@ from blockkit.core import Table, RawText
 from glados_slack.config import config
 
 async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
-    from glados_slack.env import env
+    from glados_slack.env import env, logger
     event = body["event"]
     userid = event["user"]
     text = event["text"]
+    logger.debug("Received message; Checking")
     if "thread_ts" in event.keys():
         is_tracked = await CurrentHuddles.exists().where(CurrentHuddles.thread_ts == event['thread_ts'])
         if is_tracked:
+            logger.debug("Thread is tracked")
             userSaved = await UserSettings.exists().where(UserSettings.slack_id == userid)
             if not userSaved:
+                logger.debug("User wasn't saved; saving and messaging")
                 await UserSettings.insert(UserSettings(slack_id=userid, tone="Neutral", ignore=False)).run()
                 msg = (Message()
                     .add_block(Markdown(text=f"*Hi <@{userid}>*! :glados: I'm sending you this because you sent a message in a huddle thread I'm tracking..."))
@@ -25,14 +28,17 @@ async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
                     .build()
                 )
                 await client.chat_postMessage(channel=userid, **msg)
-
             userSettings = await UserSettings.select().where(UserSettings.slack_id == userid)
             userSettings = userSettings[0]
+            logger.debug("Checking if ignored")
             if not userSettings["ignore"]:
+                logger.debug("User not ignored : asking for tts")
                 tts = await env.http.get("http://localhost:7272/tts", json={"text": text, "tone": userSettings["tone"]})
                 audio = await tts.read()
+                logger.debug("Received TTS Audio")
                 await env.http.post("http://localhost:7171/play-audio", data=audio, headers={"Content-Type": "audio/wav"})
+                logger.debug("Sent request to Huddle Handler")
         else:
-            pass
+            logger.debug("Thread is not tracked")
     else:
         pass

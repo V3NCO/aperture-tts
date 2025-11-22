@@ -55,10 +55,10 @@ class Environment:
         register_tasks()
 
         logger.debug(f"Environment setup in {time() - st:.02}s")
-        await send_heartbeat(
-            ":neodog_nom_stick: beep boop! online!",
-            client=self.slack_client,
-        )
+        #await send_heartbeat(
+        #    ":neodog_nom_stick: beep boop! online!",
+        #    client=self.slack_client,
+        #)
 
         yield
 
