@@ -12,6 +12,7 @@ from slack_sdk.web.async_client import AsyncWebClient
 
 from glados_slack.commands.join import join_handler
 from glados_slack.commands.leave import leave_handler
+from glados_slack.commands.clearhuddles import clear_huddle_handle
 from glados_slack.config import config
 
 PREFIX = "glados"  # the main command!
@@ -26,6 +27,20 @@ COMMANDS = [
         "name": "leave",
         "description": "Execute this in a channel where I am and you want me to leave",
         "function": leave_handler
+    },
+    {
+        "name": "clearhuddle",
+        "description": "Clears Huddles from the database",
+        "function": clear_huddle_handle,
+        "admin": True,
+        "parameters": [
+                    {
+                        "name": "huddle_channel",
+                        "type": "channel",
+                        "description": "The Channel that contains the huddle you want to clear",
+                        "default": "<#C000ALL|allchannels>",
+                    },
+        ],
     }
 ]
 
