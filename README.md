@@ -114,3 +114,4 @@ node Huddle.js
 - [ ] Sound insertions with like *sound*
 - [ ] Soundboard
 - [ ] Discord support
+- [ ] Alternate voice? :eyes:
