@@ -11,6 +11,7 @@ from slack_sdk.errors import SlackApiError
 from slack_sdk.web.async_client import AsyncWebClient
 
 from glados_slack.commands.join import join_handler
+from glados_slack.commands.leave import leave_handler
 from glados_slack.config import config
 
 PREFIX = "glados"  # the main command!
@@ -20,6 +21,11 @@ COMMANDS = [
         "name": "join",
         "description": "Execute this in the channel of the huddle you want me to join!",
         "function": join_handler
+    },
+    {
+        "name": "leave",
+        "description": "Execute this in a channel where I am and you want me to leave",
+        "function": leave_handler
     }
 ]
 
