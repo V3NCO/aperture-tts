@@ -14,7 +14,7 @@ async def soundboard_handler(
     sound: str
 ):
     from glados_slack.env import env, logger
-    songdir = os.path.join(os.path.dirname(__file__), '../sounds')
+    songdir = os.path.join(os.path.dirname(__file__), '../../sounds')
     sounds = os.listdir(songdir)
     current = sound+".wav"
     if current in sounds and sound != "no_sound_selected_error":
