@@ -1,0 +1,9 @@
+{
+  "match": {
+    ":3": "colon  three",
+    ":(": "sad face",
+    ":)": "smiling face",
+    ":D": "happy face",
+    "idk": "i don't know"
+  }
+}

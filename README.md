@@ -106,6 +106,9 @@ cd employee_daycare_center/glados_slack/callhandler
 node Huddle.js
 ```
 
+7. Copy `employee_daycare_center/clean.json.sample` to `employee_daycare_center/clean.json`
+
+8. Create `employee_daycare_center/sounds` and put sound effects in with the format `soundname.wav`; they will be autodetected
 ## Roadmap
 - [x] Better setting up guide
 - [ ] Multiple Huddles
