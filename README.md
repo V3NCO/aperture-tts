@@ -109,9 +109,9 @@ node Huddle.js
 ## Roadmap
 - [x] Better setting up guide
 - [ ] Multiple Huddles
-- [ ] Replace text with stuff tts can read
+- [x] Replace text with stuff tts can read
 - [x] User settings ect
-- [ ] Sound insertions with like *sound*
+- [x] Sound insertions with like *sound*
 - [x] Soundboard
 - [ ] Discord support
 - [ ] Alternate voice? :eyes:
