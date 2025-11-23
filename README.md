@@ -112,6 +112,6 @@ node Huddle.js
 - [ ] Replace text with stuff tts can read
 - [x] User settings ect
 - [ ] Sound insertions with like *sound*
-- [ ] Soundboard
+- [x] Soundboard
 - [ ] Discord support
 - [ ] Alternate voice? :eyes:

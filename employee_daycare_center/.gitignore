@@ -17,4 +17,5 @@ wheels/
 .env.dev
 
 #Modular stuff
-glados_slack/sounds
+sounds
+clean.json
