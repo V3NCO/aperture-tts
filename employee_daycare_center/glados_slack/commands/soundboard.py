@@ -2,8 +2,9 @@ from slack_bolt.async_app import AsyncAck
 from slack_bolt.async_app import AsyncRespond
 from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.tables import CurrentHuddles
+from glados_slack.huddle_process_manager import get_or_create_huddle
 import os
-from IPython.display import Audio
+import base64
 
 async def soundboard_handler(
     ack: AsyncAck,
@@ -21,10 +22,21 @@ async def soundboard_handler(
         is_tracked = await CurrentHuddles.exists().where(CurrentHuddles.channel_id == channel)
         if is_tracked:
             logger.debug("Channel is tracked")
-            audio = Audio(os.path.join(songdir, current)).data
+
+            audio_path = os.path.join(songdir, current)
+            with open(audio_path, 'rb') as f:
+                audio_data = f.read()
+            audio_base64 = base64.b64encode(audio_data).decode('utf-8')
+
             logger.debug("Grabbed Audio")
-            await env.http.post("http://localhost:7171/play-audio", data=audio, headers={"Content-Type": "audio/wav"})
-            logger.debug("Sent request to Huddle Handler")
+
+            try:
+                hp = await get_or_create_huddle(channel)
+                await hp.call("play_audio", {"audioBase64": audio_base64})
+                logger.debug("sent audio to Huddle process")
+            except Exception as e:
+                logger.error(f"failed to play audio: {e}")
+                await respond(f"failed to play audio: {e}")
         else:
             await respond("There is no huddle in this channel!")
     elif sound == "no_sound_selected_error":

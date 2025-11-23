@@ -3,6 +3,7 @@ from slack_bolt.async_app import AsyncRespond
 from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.config import config
 from glados_slack.tables import CurrentHuddles
+from glados_slack.huddle_process_manager import destroy_huddle
 
 async def leave_handler(
     ack: AsyncAck,
@@ -12,11 +13,15 @@ async def leave_handler(
     performer: str,
 ):
     await ack()
-    from glados_slack.env import env
+    from glados_slack.env import logger
     huddleexists = await CurrentHuddles.exists().where(CurrentHuddles.channel_id == channel)
     if huddleexists:
-        await env.http.post("http://localhost:7171/leave")
-        await CurrentHuddles.delete().where(CurrentHuddles.channel_id == channel).run()
-        await respond("Left huddle successsfully !")
+        try:
+            await destroy_huddle(channel)
+            await CurrentHuddles.delete().where(CurrentHuddles.channel_id == channel).run()
+            await respond("Left huddle successfully !")
+        except Exception as e:
+            logger.error(f"Failed to leave huddle: {e}")
+            await respond(f"Failed to leave huddle: {e}")
     else:
         await respond("I am not in any huddle going on in this channel !")

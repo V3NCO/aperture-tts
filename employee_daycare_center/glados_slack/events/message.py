@@ -8,9 +8,10 @@ from glados_slack.config import config
 import re
 import os
 import json
-from IPython.display import Audio
+import base64
 from pydub import AudioSegment
 from io import BytesIO
+from glados_slack.huddle_process_manager import get_or_create_huddle
 
 async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
     from glados_slack.env import env, logger
@@ -60,7 +61,6 @@ async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
                             sounds = os.listdir(songdir)
                             current = soundname+".wav"
                             if current in sounds:
-                                # audio_data = Audio(os.path.join(songdir, current)).data
                                 audio = AudioSegment.from_file(os.path.join(songdir, current), format="wav")
                                 audioparts.append(audio)
                             else:
@@ -81,7 +81,16 @@ async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
                 else:
                     tts = await env.http.get("http://localhost:7272/tts", json={"text": cleaning, "tone": userSettings["tone"]})
                     audiotrack = await tts.read()
-                await env.http.post("http://localhost:7171/play-audio", data=audiotrack, headers={"Content-Type": "audio/wav"})
+                try:
+                    huddle_row = await CurrentHuddles.select().where(CurrentHuddles.thread_ts == event['thread_ts'])
+                    if huddle_row:
+                        channel_id = huddle_row[0]['channel_id']
+                        hp = await get_or_create_huddle(channel_id)
+                        audio_base64 = base64.b64encode(audiotrack).decode('utf-8')
+                        await hp.call("play_audio", {"audioBase64": audio_base64})
+                except Exception as e:
+                    logger.error(f"Failed to play audio in huddle: {e}")
+
         else:
             logger.debug("Thread is not tracked")
     else:

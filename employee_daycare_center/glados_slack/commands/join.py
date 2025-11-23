@@ -3,6 +3,7 @@ from slack_bolt.async_app import AsyncRespond
 from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.config import config
 from glados_slack.tables import CurrentHuddles
+from glados_slack.huddle_process_manager import get_or_create_huddle
 
 async def join_handler(
     ack: AsyncAck,
@@ -24,9 +25,17 @@ async def join_handler(
         headers = {"Cookie": f"d={config.slack.userbot_d};"}
         huddle = await env.http.post("https://blahaj.enterprise.slack.com/api/rooms.join", data=payload, headers=headers)
         response = await huddle.json()
-        print(response)
-        await env.http.post("http://localhost:7171/join", json={"meeting": response["call"]["free_willy"]["meeting"], "attendee": response["call"]["free_willy"]["attendee"]})
-        await CurrentHuddles.insert(CurrentHuddles(channel_id=response['huddle']['channels'][0], thread_ts=response['huddle']['thread_root_ts'])).run()
-        await respond(f"Joined huddle in <#{response['huddle']['channels'][0]}|> :3c:")
+        logger.info(response)
+        try:
+            hp = await get_or_create_huddle(channel)
+            await hp.call("join", {
+                "meeting": response["call"]["free_willy"]["meeting"],
+                "attendee": response["call"]["free_willy"]["attendee"]
+            })
+            await CurrentHuddles.insert(CurrentHuddles(channel_id=response['huddle']['channels'][0], thread_ts=response['huddle']['thread_root_ts'])).run()
+            await respond(f"Joined huddle in <#{response['huddle']['channels'][0]}|> :3c:")
+        except Exception as e:
+            logger.error(f"Failed huddle join : {e}")
+            await respond(f"Failed to join the huddle; Please report this error to the maintainer: {e}")
     else:
         await respond("I am already in this huddle :neodog_pat:")

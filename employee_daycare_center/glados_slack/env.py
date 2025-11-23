@@ -62,7 +62,14 @@ class Environment:
         yield
 
         logger.debug("Exiting environment context")
+        try:
+            from glados_slack.huddle_process_manager import get_huddle_manager
+            manager = get_huddle_manager()
+            await manager.shutdown_all()
+        except Exception as e:
+            logger.error(f"Error shutting down huddle manager: {e}")
 
+        
         if handler:
             logger.debug("Stopping Socket Mode handler")
             await handler.close_async()
