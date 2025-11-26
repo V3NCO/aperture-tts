@@ -4,6 +4,7 @@ from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.config import config
 from glados_slack.tables import CurrentHuddles
 from glados_slack.huddle_process_manager import get_or_create_huddle, destroy_huddle
+from slack_sdk.errors import SlackApiError
 
 async def join_handler(
     ack: AsyncAck,
@@ -16,6 +17,13 @@ async def join_handler(
     from glados_slack.env import env, logger
     rowexists = await CurrentHuddles.exists().where(CurrentHuddles.channel_id == channel)
     logger.info(rowexists)
+    try:
+        await client.conversations_join(channel=channel)
+    except SlackApiError as e:
+        error = e.response.get("error")
+        if error in ["channel_not_found", ""]:
+            await respond(f"Failed to join <#{channel}|> - `{error}` - Try to invite me yourself!")
+            return
     if not rowexists:
         payload = {
                 "token": config.slack.userbot_token,
@@ -28,9 +36,14 @@ async def join_handler(
         logger.info(response)
 
         if not response.get("ok"):
-            logger.error(f"Slack API error: {response.get('error')}")
-            await respond(f"Failed to join huddle: {response.get('error')}")
-            return
+            if response.get("error") == "channel_not_found":
+                logger.error(f"Slack API error: {response.get('error')}; Probably not in channel asking to get invited")
+                await respond(f"Hey! My voice chat selfbot is not in this channel! Invite it first: <@{config.slack.userbot_id}>")
+                return
+            else:
+                logger.error(f"Slack API error: {response.get('error')}")
+                await respond(f"Failed to join huddle: {response.get('error')}")
+                return
 
         try:
             hp = await get_or_create_huddle(channel)
