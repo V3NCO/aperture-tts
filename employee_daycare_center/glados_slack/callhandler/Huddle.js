@@ -5,11 +5,13 @@ const path = require('path');
 const fs = require('fs');
 const http = require('http');
 
-const {MeetingSessionConfiguration, DefaultDeviceController, DefaultMeetingSession, ConsoleLogger, LogLevel, AudioProfile } = require('amazon-chime-sdk-js')
-
 let browser;
 let page;
-const port = 7171;
+let isLeaving = false;
+
+// Get port from command line arguments, default to 7171
+const args = process.argv.slice(2);
+const port = args[0] ? parseInt(args[0], 10) : 7171;
 
 const server = http.createServer((req, res) => {
   if (req.url === '/') {
@@ -32,7 +34,9 @@ const server = http.createServer((req, res) => {
   }
 });
 
-server.listen(port);
+server.listen(port, () => {
+  console.error(`Huddle server listening on port ${port}`);
+});
 
 const rl = readline.createInterface({
   input: process.stdin,
@@ -112,7 +116,17 @@ async function rpcJoin(params) {
   page = await browser.newPage();
   page.setDefaultTimeout(90000);
 
-  page.on('console', msg => console.error('PAGE LOG:', msg.text()));
+  page.on('console', msg => {
+    const text = msg.text();
+    console.error('PAGE LOG:', text);
+    
+    // Detect if the session stopped unexpectedly
+    if (text.includes('Chime session stopped') && !isLeaving) {
+        console.error('Detected unexpected session stop. Exiting process.');
+        process.exit(0);
+    }
+  });
+  
   page.on('error', err => console.error('PAGE ERROR', err));
   page.on('pageerror', e => console.error('PAGEERROR', e));
 
@@ -212,6 +226,7 @@ async function rpcPlayAudio(params) {
 }
 
 async function rpcLeave(params) {
+  isLeaving = true;
   if (!page) {
     throw new Error('No active meeting page to leave.');
   }
@@ -241,6 +256,7 @@ async function rpcLeave(params) {
 }
 
 process.on('SIGINT', async () => {
+  isLeaving = true;
   if (page) {
     try {
       await rpcLeave({});
@@ -252,6 +268,7 @@ process.on('SIGINT', async () => {
 });
 
 process.on('SIGTERM', async () => {
+  isLeaving = true;
   if (page) {
     try {
       await rpcLeave({});

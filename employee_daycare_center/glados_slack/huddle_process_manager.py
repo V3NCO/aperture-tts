@@ -2,21 +2,33 @@ import asyncio
 from typing import Dict, Optional, Any
 import json
 from pathlib import Path
+import socket
+from contextlib import closing
 
 
 class HuddleProcessError(Exception):
     """Error when huddle fails"""
     pass
+
+def find_free_port():
+    """Find a free port on localhost"""
+    with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
+        s.bind(('', 0))
+        s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+        return s.getsockname()[1]
+
 class HuddleProcess:
     """Manages Huddle.js subprocesses individually or wtvr"""
 
-    def __init__(self, channel_id: str, huddle_js_path: str):
+    def __init__(self, channel_id: str, huddle_js_path: str, port: int, on_exit_callback=None):
         self.channel_id = channel_id
         self.huddle_js_path = huddle_js_path
+        self.port = port
         self.process: Optional[asyncio.subprocess.Process] = None
         self.request_counter = 0
         self.pending_responses: Dict[int, asyncio.Future] = {}
         self.reader_task: Optional[asyncio.Task] = None
+        self.on_exit_callback = on_exit_callback
 
     async def start(self) -> None:
         """Launch the Huddle subprocess"""
@@ -27,8 +39,9 @@ class HuddleProcess:
             return
 
         try:
+            logger.info(f"Starting Huddle {self.channel_id} on port {self.port}")
             self.process = await asyncio.create_subprocess_exec(
-                "node", self.huddle_js_path,
+                "node", self.huddle_js_path, str(self.port),
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
@@ -38,7 +51,7 @@ class HuddleProcess:
             self.reader_task = asyncio.create_task(self._read_responses())
         except Exception as e:
             logger.error(f"Failed to start huddle {self.channel_id}: {e}")
-            raise HuddleProcessError(f"Failed to start process: {e}") # I should do clean errors more often it's satisfying but I'm too lazy :p
+            raise HuddleProcessError(f"Failed to start process: {e}")
 
     async def _read_responses(self) -> None:
         """Background task that reads process stdout"""
@@ -56,17 +69,27 @@ class HuddleProcess:
                 if not line:
                     break
                 try:
-                    response = json.loads(line.decode())
-                    request_id = response.get("id")
+                    decoded_line = line.decode().strip()
+                    if not decoded_line:
+                        continue
+                        
+                    # Try to parse as JSON response
+                    if decoded_line.startswith("{"):
+                        response = json.loads(decoded_line)
+                        request_id = response.get("id")
 
-                    if request_id is not None and request_id in self.pending_responses:
-                        future = self.pending_responses.pop(request_id)
-                        if not future.done():
-                            future.set_result(response)
+                        if request_id is not None and request_id in self.pending_responses:
+                            future = self.pending_responses.pop(request_id)
+                            if not future.done():
+                                future.set_result(response)
+                        elif "error" in response:
+                             logger.error(f"Async error from huddle {self.channel_id}: {response['error']}")
                     else:
-                        logger.warning(f"unknonwn req id {request_id}: {response}")
-                except json.JSONDecodeError as e:
-                    logger.error(f"Failed to parse JSON response: {e}, line: {line}")
+                        # Log non-JSON output (console logs from JS)
+                        logger.debug(f"[{self.channel_id}] {decoded_line}")
+                        
+                except json.JSONDecodeError:
+                    logger.debug(f"[{self.channel_id}] RAW: {line}")
                 except Exception as e:
                     logger.error(f"Error processing response: {e}")
 
@@ -76,6 +99,9 @@ class HuddleProcess:
             logger.error(f"reader task error at {self.channel_id}: {e}")
         finally:
             logger.info(f"end of {self.channel_id}'s reader task")
+            # Trigger cleanup if process died unexpectedly
+            if self.on_exit_callback:
+                asyncio.create_task(self.on_exit_callback(self.channel_id))
 
     async def call(self, method: str, params: Optional[Dict[str, Any]] = None, timeout: float = 30) -> Any:
         """Call method in huddle.js subprocess"""
@@ -126,17 +152,29 @@ class HuddleProcess:
         try:
             logger.info(f"terminating Huddle proc {self.channel_id}")
 
+            # Clear callback to avoid recursion during intentional termination
+            self.on_exit_callback = None
+
             if self.process.stdin:
-                self.process.stdin.close()
                 try:
+                    self.process.stdin.close()
+                except Exception:
+                    pass
+                
+            # Give it a chance to exit gracefully
+            try:
+                if self.process.returncode is None:
+                    self.process.terminate()
                     await asyncio.wait_for(self.process.wait(), timeout=5)
-                except asyncio.TimeoutError:
-                    logger.warning(f"process {self.process.pid} didnt exit, killing it")
+            except asyncio.TimeoutError:
+                logger.warning(f"process {self.process.pid} didnt exit, killing it")
+                try:
                     self.process.kill()
-                    try:
-                        await asyncio.wait_for(self.process.wait(), timeout=2.0)
-                    except asyncio.TimeoutError:
-                        logger.error(f"failed to kill process {self.process.pid}")
+                    await asyncio.wait_for(self.process.wait(), timeout=2.0)
+                except Exception as e:
+                    logger.error(f"failed to kill process {self.process.pid}: {e}")
+            except Exception as e:
+                 logger.error(f"Error waiting for process exit: {e}")
 
             if self.reader_task and not self.reader_task.done():
                 self.reader_task.cancel()
@@ -167,10 +205,36 @@ class HuddleProcessManager:
             raise HuddleProcessError(f"Huddle.js not found at {huddle_js_path}")
         return str(huddle_js_path)
 
+    async def _handle_process_exit(self, channel_id: str):
+        """Callback for when a process exits unexpectedly"""
+        from glados_slack.env import logger
+        from glados_slack.tables import CurrentHuddles
+        
+        logger.warning(f"Process for channel {channel_id} exited unexpectedly. Cleaning up.")
+        if channel_id in self.processes:
+            # Remove from memory
+            # We don't call terminate because it's already dead or dying
+            # But we might need to ensure resources are freed
+            proc = self.processes.pop(channel_id)
+            await proc.terminate() 
+            
+            # Clean up DB
+            try:
+                await CurrentHuddles.delete().where(CurrentHuddles.channel_id == channel_id).run()
+                logger.info(f"Removed {channel_id} from CurrentHuddles table")
+            except Exception as e:
+                logger.error(f"Failed to clean up DB for {channel_id}: {e}")
+
     async def get_or_create_huddle(self, channel_id: str) -> HuddleProcess:
         """get existing or create process for given channel"""
         if channel_id not in self.processes:
-            huddle = HuddleProcess(channel_id, self.huddle_js_path)
+            port = find_free_port()
+            huddle = HuddleProcess(
+                channel_id, 
+                self.huddle_js_path, 
+                port,
+                on_exit_callback=self._handle_process_exit
+            )
             await huddle.start()
             self.processes[channel_id] = huddle
         return self.processes[channel_id]
@@ -178,6 +242,7 @@ class HuddleProcessManager:
     async def destroy_huddle(self, channel_id: str) -> None:
         """Destroy HuddleProcess : leave and clean"""
         from glados_slack.env import logger
+        from glados_slack.tables import CurrentHuddles
 
         if channel_id in self.processes:
             huddle = self.processes[channel_id]
@@ -186,9 +251,18 @@ class HuddleProcessManager:
                 await huddle.call("leave", timeout=10.0)
             except HuddleProcessError as e:
                 logger.warning(f"Failed to clean leave meeting {channel_id}: {e}")
+            except Exception as e:
+                logger.error(f"Unexpected error leaving meeting {channel_id}: {e}")
 
             await huddle.terminate()
-            del self.processes[channel_id]
+            if channel_id in self.processes:
+                del self.processes[channel_id]
+
+            try:
+                await CurrentHuddles.delete().where(CurrentHuddles.channel_id == channel_id).run()
+                logger.info(f"Removed {channel_id} from CurrentHuddles table")
+            except Exception as e:
+                logger.error(f"Failed to clean up DB for {channel_id}: {e}")
         else:
             logger.warning(f"no huddle proc for {channel_id} twin")
 

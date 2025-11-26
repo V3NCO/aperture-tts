@@ -3,7 +3,7 @@ from slack_bolt.async_app import AsyncRespond
 from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.config import config
 from glados_slack.tables import CurrentHuddles
-from glados_slack.huddle_process_manager import get_or_create_huddle
+from glados_slack.huddle_process_manager import get_or_create_huddle, destroy_huddle
 
 async def join_handler(
     ack: AsyncAck,
@@ -23,9 +23,15 @@ async def join_handler(
                 "region": "us-east-2" # Yes we are hardcoding us-east-2 because it's always us-east; just like it's always DNS :p
         }
         headers = {"Cookie": f"d={config.slack.userbot_d};"}
-        huddle = await env.http.post("https://blahaj.enterprise.slack.com/api/rooms.join", data=payload, headers=headers)
+        huddle = await env.http.post("https://slack.com/api/rooms.join", data=payload, headers=headers)
         response = await huddle.json()
         logger.info(response)
+
+        if not response.get("ok"):
+            logger.error(f"Slack API error: {response.get('error')}")
+            await respond(f"Failed to join huddle: {response.get('error')}")
+            return
+
         try:
             hp = await get_or_create_huddle(channel)
             await hp.call("join", {
@@ -36,6 +42,7 @@ async def join_handler(
             await respond(f"Joined huddle in <#{response['huddle']['channels'][0]}|> :3c:")
         except Exception as e:
             logger.error(f"Failed huddle join : {e}")
+            await destroy_huddle(channel)
             await respond(f"Failed to join the huddle; Please report this error to the maintainer: {e}")
     else:
         await respond("I am already in this huddle :neodog_pat:")
