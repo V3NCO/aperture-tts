@@ -8,6 +8,7 @@ class SlackConfig(BaseSettings):
     signing_secret: str
     userbot_token: str
     userbot_d: str
+    userbot_id: str
     maintainer_id: str
     app_token: str | None = None
     heartbeat_channel: str | None = None
