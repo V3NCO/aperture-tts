@@ -14,6 +14,7 @@ from glados_slack.commands.join import join_handler
 from glados_slack.commands.leave import leave_handler
 from glados_slack.commands.clearhuddles import clear_huddle_handle
 from glados_slack.commands.soundboard import soundboard_handler
+from glados_slack.commands.settings import style_handler, ignore_handler
 from glados_slack.config import config
 
 PREFIX = "glados"  # the main command!
@@ -30,6 +31,11 @@ COMMANDS = [
         "function": leave_handler
     },
     {
+      "name": "ignore",
+      "description": "Toggles the ignore setting for your user",
+      "function": ignore_handler
+    },
+    {
         "name": "clearhuddle",
         "description": "Clears Huddles from the database",
         "function": clear_huddle_handle,
@@ -42,6 +48,19 @@ COMMANDS = [
                         "default": "<#C000ALL|allchannels>",
                     },
         ],
+    },
+    {
+        "name": "style",
+        "description": "Changes the tone of GLaDOS's voice for your user!",
+        "function": style_handler,
+        "parameters": [
+            {
+                "name": "style",
+                "type": "string",
+                "description": "The style you want to set it to :3",
+                "default": "Neutral"
+            }
+        ]
     },
     {
         "name": "soundboard",
