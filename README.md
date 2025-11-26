@@ -113,7 +113,7 @@ node Huddle.js
 - [x] Better setting up guide
 - [x] Multiple Huddles
 - [ ] Auto leave when no one is in call
-- [ ] Settings command
+- [x] Settings command
 - [x] Replace text with stuff tts can read
 - [x] User settings ect
 - [x] Sound insertions with like *sound*
