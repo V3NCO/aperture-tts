@@ -14,7 +14,7 @@ async def soundboard_handler(
     performer: str,
     sound: str
 ):
-    from glados_slack.env import env, logger
+    from glados_slack.env import logger
     songdir = os.path.join(os.path.dirname(__file__), '../../sounds')
     sounds = os.listdir(songdir)
     current = sound+".wav"

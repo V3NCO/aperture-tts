@@ -1,4 +1,3 @@
-from piccolo.query.proxy import ResponseType
 from slack_bolt.async_app import AsyncSay
 from slack_sdk.web.async_client import AsyncWebClient
 from glados_slack.tables import CurrentHuddles, UserSettings

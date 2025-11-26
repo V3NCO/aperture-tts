@@ -1,7 +1,6 @@
 from slack_bolt.async_app import AsyncAck
 from slack_bolt.async_app import AsyncRespond
 from slack_sdk.web.async_client import AsyncWebClient
-from glados_slack.config import config
 from glados_slack.tables import CurrentHuddles
 from glados_slack.huddle_process_manager import destroy_huddle
 
