@@ -112,11 +112,12 @@ node Huddle.js
 ## Roadmap
 - [x] Better setting up guide
 - [x] Multiple Huddles
-- [ ] Auto leave when no one is in call
+- [x] Auto leave when no one is in call
 - [x] Settings command
 - [x] Replace text with stuff tts can read
 - [x] User settings ect
 - [x] Sound insertions with like *sound*
 - [x] Soundboard
-- [ ] Discord support
+> Maybe one day but right now I don't feel like doing that
+- [ ] Discord support 
 - [ ] Alternate voice? :eyes:
