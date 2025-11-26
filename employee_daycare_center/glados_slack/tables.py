@@ -7,6 +7,7 @@ from piccolo.columns import Text, Varchar, Boolean
 class CurrentHuddles(Table):
     channel_id = Varchar(length=40, index=True)
     thread_ts = Text()
+    huddle_id = Varchar(length=40, index=True)
 class UserSettings(Table):
     slack_id = Varchar(length=40, index=True)
     tone = Text()

@@ -51,7 +51,7 @@ async def join_handler(
                 "meeting": response["call"]["free_willy"]["meeting"],
                 "attendee": response["call"]["free_willy"]["attendee"]
             })
-            await CurrentHuddles.insert(CurrentHuddles(channel_id=response['huddle']['channels'][0], thread_ts=response['huddle']['thread_root_ts'])).run()
+            await CurrentHuddles.insert(CurrentHuddles(channel_id=response['huddle']['channels'][0], thread_ts=response['huddle']['thread_root_ts'], huddle_id=response['huddle']['id'])).run()
             await respond(f"Joined huddle in <#{response['huddle']['channels'][0]}|> :3c:")
         except Exception as e:
             logger.error(f"Failed huddle join : {e}")
