@@ -111,7 +111,9 @@ node Huddle.js
 8. Create `employee_daycare_center/sounds` and put sound effects in with the format `soundname.wav`; they will be autodetected
 ## Roadmap
 - [x] Better setting up guide
-- [ ] Multiple Huddles
+- [x] Multiple Huddles
+- [ ] Auto leave when no one is in call
+- [ ] Settings command
 - [x] Replace text with stuff tts can read
 - [x] User settings ect
 - [x] Sound insertions with like *sound*
