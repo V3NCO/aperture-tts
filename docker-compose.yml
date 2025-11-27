@@ -5,16 +5,15 @@ services:
     environment:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
-      POSTGRES_DB: aperture
+      POSTGRES_DB: aperture-tts
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U app"]
       interval: 5s
       retries: 20
-    ports:
-      - "5432:5432"
+    # I think we should be okay for ports because its in a single docker network since its one docker compose ? Unsure how docker works
 
-  web:
-    build: .
+  slack:
+    image: ghcr.io/v3nco/aperture-tts-slack:latest
     depends_on:
       db:
         condition: service_healthy
