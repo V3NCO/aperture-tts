@@ -8,7 +8,9 @@ SLEEP=2
 i=0
 
 echo "Waiting for DB and running migrations..."
-until uv run piccolo migrations forwards all; do
+
+# Removed 'uv run' - using direct command since venv is in PATH
+until piccolo migrations forwards all; do
   i=$((i+1))
   if [ "$i" -ge "$MAX_RETRIES" ]; then
     exit 1
