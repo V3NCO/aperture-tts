@@ -33,4 +33,4 @@ jobs:
           context: ./employee_daycare_center
           file: ./employee_daycare_center/Dockerfile
           push: true
-          tags: ghcr.io/v3nco/aperture-tts-slack:latest
+          tags: ghcr.io/v3nco/aperture-tts-model:latest
