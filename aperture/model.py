@@ -1,5 +1,6 @@
 class ModelLoader:
     def __init__(self):
+        from aperture.env import config
         from style_bert_vits2.tts_model import TTSModel, Languages
         from pathlib import Path
         from style_bert_vits2.nlp import bert_models
@@ -14,7 +15,7 @@ class ModelLoader:
             model_path=assets_root / "Portal_GLaDOS_v1_e782_s50000.safetensors",
             config_path=assets_root / "config.json",
             style_vec_path=assets_root / "style_vectors.npy",
-            device="cpu",
+            device=config.device,
         )
 
         self.model = model
