@@ -6,6 +6,7 @@ on:
     paths:
       - '**'
       - '.github/workflows/docker-publish-model.yml'
+      - '!employee_daycare_center/**'
   workflow_dispatch:
 
 jobs:
