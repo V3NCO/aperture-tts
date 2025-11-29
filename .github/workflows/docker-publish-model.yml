@@ -36,7 +36,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: ./employee_daycare_center
+          context: ./
           file: ./Dockerfile
           push: true
           tags: ghcr.io/v3nco/aperture-tts-model:latest
