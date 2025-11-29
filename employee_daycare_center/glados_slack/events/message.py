@@ -66,7 +66,7 @@ async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
                                 pass
                         else:
                             if part:
-                                tts = await env.http.get("http://localhost:7272/tts", json={"text": part, "tone": userSettings["tone"]})
+                                tts = await env.http.get(f"{config.tts_service_host}/tts", json={"text": part, "tone": userSettings["tone"]})
                                 audio_data = await tts.read()
                                 audio = AudioSegment.from_file(BytesIO(audio_data), format="wav")
                                 audioparts.append(audio)
@@ -78,7 +78,7 @@ async def message_handler(client: AsyncWebClient, say: AsyncSay, body: dict):
                     audiotrack.export(buffer, format="wav")
                     audiotrack = buffer.getvalue()
                 else:
-                    tts = await env.http.get("http://localhost:7272/tts", json={"text": cleaning, "tone": userSettings["tone"]})
+                    tts = await env.http.get(f"{config.tts_service_host}/tts", json={"text": cleaning, "tone": userSettings["tone"]})
                     audiotrack = await tts.read()
                 try:
                     huddle_row = await CurrentHuddles.select().where(CurrentHuddles.thread_ts == event['thread_ts'])

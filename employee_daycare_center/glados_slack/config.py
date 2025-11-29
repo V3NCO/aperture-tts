@@ -20,6 +20,7 @@ class Config(BaseSettings):
     )
     slack: SlackConfig
     database_url: PostgresDsn
+    tts_service_host: str = "http://localhost:7272"
     environment: str = "development"
     timezone: str = "Europe/London"
     port: int = 3000
