@@ -6,6 +6,6 @@ class Config(BaseSettings):
     model_config = SettingsConfigDict(
         env_file=".env", env_nested_delimiter="__", extra="ignore"
     )
-    device: str
+    device: str = "cpu"
 
 config = Config()  # type: ignore
