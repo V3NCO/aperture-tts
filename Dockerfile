@@ -12,6 +12,6 @@ RUN uv sync --frozen
 
 EXPOSE 7272
 
-ENV PATH="/app/.vexznv/bin:$PATH"
+ENV PATH="/app/.venv/bin:$PATH"
 
 CMD [ "uv", "run", "main.py" ]
