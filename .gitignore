@@ -5,3 +5,5 @@ aperture/__pycache__
 employee-daycare-center/.env
 .env
 employee_daycare_center/__pycache__
+*/.DS_Store
+.DS_Store
