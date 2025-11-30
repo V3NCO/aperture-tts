@@ -19,7 +19,7 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: francisbilham11/action-cached-lfs-checkout@v3
+        uses: francisbilham11/action-cached-lfs-checkout@v3.6
 
       - name: Log in to GitHub Container Registry
         uses: docker/login-action@v3
