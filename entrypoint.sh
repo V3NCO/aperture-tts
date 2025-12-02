@@ -22,4 +22,28 @@ lfs_pulled() {
 
 fetch_models() {
     echo "fetching git LFS"
+    
+    TEMP_DIR="/tmp/repo"
+    rm -rf "$TEMP_DIR"
+    
+    git clone --depth 1 "https://github.com/V3NCO/aperture-tts.git" "$TEMP_DIR"
+    cd "$TEMP_DIR"
+    git submodule update --init --recursive
+    if [ -d "glados-model" ]; then
+        cd glados-model
+        git lfs pull
+        cd ..
+        cp -r glados-model/* /app/glados-model/
+    fi
+    
+    if [ -d "deberta-v3-large" ]; then
+        cd deberta-v3-large
+        git lfs pull
+        cd ..
+        cp -r deberta-v3-large/* /app/deberta-v3-large/
+    fi
+    
+    cd /app
+    rm -rf "$TEMP_DIR"
+    echo "models fetched i think"
 }
