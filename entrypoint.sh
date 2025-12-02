@@ -10,7 +10,7 @@ lfs_pulled() {
     if [ ! -f "$file" ]; then
         return 0
     fi
-    
+
     local size
     size=$(stat -c%s "$file" 2>/dev/null || echo 0)
     if [ "$size" -lt 2048 ]; then
@@ -22,10 +22,10 @@ lfs_pulled() {
 
 fetch_models() {
     echo "fetching git LFS"
-    
+
     TEMP_DIR="/tmp/repo"
     rm -rf "$TEMP_DIR"
-    
+
     git clone --depth 1 "https://github.com/V3NCO/aperture-tts.git" "$TEMP_DIR"
     cd "$TEMP_DIR"
     git submodule update --init --recursive
@@ -35,15 +35,23 @@ fetch_models() {
         cd ..
         cp -r glados-model/* /app/glados-model/
     fi
-    
+
     if [ -d "deberta-v3-large" ]; then
         cd deberta-v3-large
         git lfs pull
         cd ..
         cp -r deberta-v3-large/* /app/deberta-v3-large/
     fi
-    
+
     cd /app
     rm -rf "$TEMP_DIR"
     echo "models fetched i think"
 }
+
+if lfs_pulled "$GLADOS_FILE" || lfs_pulled "$DEBERTA_FILE"; then
+    fetch_models
+else
+    echo "models present anyways lol"
+fi
+
+exec "$@"

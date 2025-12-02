@@ -9,3 +9,7 @@ data/
 *.zip
 *.tar.gz
 *.onnx
+*.bin
+*.safetensors
+*.h5
+*.model
