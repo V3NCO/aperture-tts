@@ -1,1 +1,11 @@
-employee_daycare_center
+employee_daycare_center/
+.git
+model_weights/
+models/
+data/
+*.pt
+*.pth
+*.ckpt
+*.zip
+*.tar.gz
+*.onnx
