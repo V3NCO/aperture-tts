@@ -52,7 +52,11 @@ services:
       - /dev/dri/by-path:/dev/dri/by-path
     environment:
       - LIBVA_DRIVER_NAME=iHD
-      - ONEAPI_DEVICE_SELECTOR=level_zero
+      - SYCL_DEVICE_FILTER=level_zero
+      - ONEAPI_DEVICE_SELECTOR=level_zero:*
+      - HOST=0.0.0.0
+      - PORT=7272
+      - DEVICE=${DEVICE:-xpu}
     ipc: host
     ports:
       - 7273:7272
