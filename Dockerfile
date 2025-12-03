@@ -13,7 +13,7 @@ WORKDIR /app
 
 # RUN git lfs pull
 # RUN uv python install
-RUN python -m pip install .
+RUN uv pip install --system .
 RUN rm -rf /root/.cache /tmp/.cache || true
 
 

@@ -1,4 +1,4 @@
-version: "3.8"
+# This assumes you have traefik with a "proxy" network; if you don't you can remove all mentions that network from this file
 services:
   db:
     image: postgres:15
@@ -6,20 +6,60 @@ services:
       POSTGRES_USER: app
       POSTGRES_PASSWORD: ${POSTGRES_PASS}
       POSTGRES_DB: aperture-tts
+    volumes:
+      - /home/fmy/Docker/AppData/aperture-tts/pg:/var/lib/postgresql/data
+    ports:
+      - 5433:5432
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U app"]
+      test:
+        - CMD-SHELL
+        - pg_isready -U app -d aperture-tts
       interval: 5s
       retries: 20
-    # I think we should be okay for ports because its in a single docker network since its one docker compose ? Unsure how docker works
-
+    networks:
+      - default
   slack:
     image: ghcr.io/v3nco/aperture-tts-slack:latest
     depends_on:
       db:
         condition: service_healthy
+      model:
+        condition: service_started
     environment:
       database_url: ${DATABASE_URL}
-    ports:
-      - "8080:3000"
+      PYTHONPATH: /app
+    env_file:
+      - .env
     volumes:
-      - ./slack:/app
+      - /home/fmy/Docker/AppData/aperture-tts/slack/clean.json:/app/clean.json
+      - /home/fmy/Docker/AppData/aperture-tts/slack/sounds:/app/sounds
+    networks:
+      - default
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.aperture-tts-slack.rule=Host(`aperture-tts-slack.v3nco.dev`)
+      - traefik.http.routers.aperture-tts-slack.entrypoints=https
+      - traefik.http.routers.aperture-tts-slack.tls.certresolver=myresolver
+      - traefik.http.routers.aperture-tts-slack.priority=1
+      - traefik.http.routers.aperture-tts-slack.middlewares=security-headers@file,rate-limit@file
+      - traefik.http.services.aperture-tts-slack.loadbalancer.server.port=3000
+  model:
+    image: ghcr.io/v3nco/aperture-tts-model:latest
+    devices:
+      - /dev/dri:/dev/dri
+    volumes:
+      - /dev/dri/by-path:/dev/dri/by-path
+    environment:
+      - LIBVA_DRIVER_NAME=iHD
+      - ONEAPI_DEVICE_SELECTOR=level_zero
+    ipc: host
+    ports:
+      - 7273:7272
+    networks:
+      - default
+    env_file:
+      - .env
+networks:
+  proxy:
+    external: true
