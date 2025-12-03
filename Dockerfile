@@ -13,7 +13,7 @@ WORKDIR /app
 
 # RUN git lfs pull
 # RUN uv python install
-RUN uv sync --frozen --system
+RUN python -m pip install .
 RUN rm -rf /root/.cache /tmp/.cache || true
 
 
@@ -25,4 +25,4 @@ EXPOSE 7272
 # ENV PATH="/app/.venv/bin:$PATH"
 
 ENTRYPOINT [ "/app/entrypoint.sh" ]
-CMD [ "uv", "run", "main.py" ]
+CMD ["python", "main.py"]
