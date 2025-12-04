@@ -13,8 +13,12 @@ WORKDIR /app
 
 # RUN git lfs pull
 # RUN uv python install
-RUN python -c "import torch; print(f'torch=={torch.__version__.split(\"+\")[0]}')" > constraints.txt
-RUN uv pip install --system -c constraints.txt .
+RUN python -c "import torch; print(f'torch=={torch.__version__}')" > constraints.txt
+
+RUN uv pip install --system \
+    --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ \
+    -c constraints.txt \
+    .
 RUN rm -rf /root/.cache /tmp/.cache || true
 
 
