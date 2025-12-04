@@ -1,13 +1,19 @@
 #!/bin/bash
 set -e
 
+# --- INTEL ONEAPI SETUP ---
 if [ -f /opt/intel/oneapi/setvars.sh ]; then
     source /opt/intel/oneapi/setvars.sh > /dev/null 2>&1
 fi
-
 export ZE_ENABLE_PCI_ID_DEVICE_ORDER=1
+# --------------------------
 
-# omg being able to hardcode because docker is so convinient
+echo "--- RUNNING DIAGNOSTIC ---"
+# We run this in a subshell so if it segfaults, the entrypoint script doesn't die immediately
+# and we can print a message.
+(python debug.py) || echo "!!! DIAGNOSTIC CRASHED WITH EXIT CODE $? !!!"
+echo "--- DIAGNOSTIC COMPLETE ---"
+
 GLADOS_FILE="/app/glados-model/Models/GPT-SoVITS/GPT_weights/Portal_GLaDOS_GPT-SoVITS_v1.1-e15.ckpt"
 DEBERTA_FILE="/app/deberta-v3-large/pytorch_model.bin"
 
