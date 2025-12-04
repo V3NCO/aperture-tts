@@ -6,7 +6,7 @@ ENV PIP_DISABLE_PIP_VERSION_CHECK=1
 ENV XDG_CACHE_HOME=/tmp/.cache
 ENV TMPDIR=/tmp
 
-RUN apt-get update && apt-get install -y git-lfs
+RUN apt-get update && apt-get install -y git-lfs espeak-ng build-essential
 
 ADD . /app
 WORKDIR /app
