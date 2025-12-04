@@ -1,6 +1,12 @@
 #!/bin/bash
 set -e
 
+if [ -f /opt/intel/oneapi/setvars.sh ]; then
+    source /opt/intel/oneapi/setvars.sh > /dev/null 2>&1
+fi
+
+export ZE_ENABLE_PCI_ID_DEVICE_ORDER=1
+
 # omg being able to hardcode because docker is so convinient
 GLADOS_FILE="/app/glados-model/Models/GPT-SoVITS/GPT_weights/Portal_GLaDOS_GPT-SoVITS_v1.1-e15.ckpt"
 DEBERTA_FILE="/app/deberta-v3-large/pytorch_model.bin"
