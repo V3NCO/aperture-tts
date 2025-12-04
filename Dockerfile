@@ -13,7 +13,8 @@ WORKDIR /app
 
 # RUN git lfs pull
 # RUN uv python install
-RUN uv pip install --system .
+RUN python -c "import torch; print(f'torch=={torch.__version__.split(\"+\")[0]}')" > constraints.txt
+RUN uv pip install --system -c constraints.txt .
 RUN rm -rf /root/.cache /tmp/.cache || true
 
 
