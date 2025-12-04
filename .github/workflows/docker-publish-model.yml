@@ -57,6 +57,6 @@ jobs:
           context: ./
           file: ./Dockerfile
           push: true
-          cache-to: type=gha,mode=max
+          #cache-to: type=gha,mode=max
           cache-from: type=gha
           tags: ghcr.io/v3nco/aperture-tts-model:latest
