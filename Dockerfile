@@ -13,14 +13,17 @@ WORKDIR /app
 
 # RUN git lfs pull
 # RUN uv python install
-RUN python -c "import torch; \
-print(f'torch=={torch.__version__}'); \
-try: \
-    import torchaudio; \
-    print(f'torchaudio=={torchaudio.__version__}'); \
-except ImportError: \
-    pass" > constraints.txt
-RUN python -m pip install --no-cache-dir \
+RUN echo "import torch" > get_constraints.py && \
+    echo "print(f'torch=={torch.__version__}')" >> get_constraints.py && \
+    echo "try:" >> get_constraints.py && \
+    echo "    import torchaudio" >> get_constraints.py && \
+    echo "    print(f'torchaudio=={torchaudio.__version__}')" >> get_constraints.py && \
+    echo "except ImportError:" >> get_constraints.py && \
+    echo "    pass" >> get_constraints.py && \
+    python get_constraints.py > constraints.txt && \
+    rm get_constraints.py
+
+    RUN python -m pip install --no-cache-dir \
     -c constraints.txt \
     --extra-index-url https://download.pytorch.org/whl/cpu \
     .
