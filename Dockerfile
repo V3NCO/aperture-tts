@@ -13,11 +13,13 @@ WORKDIR /app
 
 # RUN git lfs pull
 # RUN uv python install
-RUN python -c "import torch; print(f'torch=={torch.__version__}')" > constraints.txt
+RUN python -c "import torch; print(f'torch=={torch.__version__}'); \
+    try: import torchaudio; print(f'torchaudio=={torchaudio.__version__}'); \
+    except ImportError: pass" > constraints.txt
 
-RUN uv pip install --system \
-    --extra-index-url https://pytorch-extension.intel.com/release-whl/stable/xpu/us/ \
+RUN python -m pip install --no-cache-dir \
     -c constraints.txt \
+    --extra-index-url https://download.pytorch.org/whl/cpu \
     .
 RUN rm -rf /root/.cache /tmp/.cache || true
 
