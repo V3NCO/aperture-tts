@@ -9,8 +9,6 @@ export ZE_ENABLE_PCI_ID_DEVICE_ORDER=1
 # --------------------------
 
 echo "--- RUNNING DIAGNOSTIC ---"
-# We run this in a subshell so if it segfaults, the entrypoint script doesn't die immediately
-# and we can print a message.
 (python debug.py) || echo "!!! DIAGNOSTIC CRASHED WITH EXIT CODE $? !!!"
 echo "--- DIAGNOSTIC COMPLETE ---"
 
@@ -66,4 +64,7 @@ else
     echo "models present anyways lol"
 fi
 
-exec "$@"
+# CRITICAL: Enable faulthandler to print stack trace on SegFault (Exit 139)
+# This overrides the default CMD to ensure we get debug info
+export PYTHONFAULTHANDLER=1
+exec python -X faulthandler main.py
